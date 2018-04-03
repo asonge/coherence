@@ -2,7 +2,7 @@ defmodule Coherence.ControllerHelpers do
   @moduledoc """
   Common helper functions for Coherence Controllers.
   """
-  import Phoenix.Controller, only: [put_flash: 3, redirect: 2, put_layout: 2, put_view: 2]
+  import Phoenix.Controller, only: [put_flash: 3, redirect: 2, put_layout: 2, put_new_layout: 2, put_view: 2]
   import Plug.Conn, only: [halt: 1]
 
   alias Coherence.{ConfirmableService, RememberableService, TrackableService, Messages}
@@ -34,7 +34,7 @@ defmodule Coherence.ControllerHelpers do
   end
 
   defp check_for_coherence(conn, "Coherence") do
-    put_layout conn, {Module.concat(Config.web_module, LayoutView), :app}
+    put_new_layout conn, {Module.concat(Config.web_module(), LayoutView), :app}
   end
   defp check_for_coherence(conn, _), do: conn
 
@@ -285,9 +285,9 @@ defmodule Coherence.ControllerHelpers do
   end
   def changeset(which, module, model, params) do
     {mod, fun, args} = case Application.get_env :coherence, :changeset do
-      nil -> {module, :changeset, [model, params]}
-      {mod, fun} -> {mod, fun, [model, params, which]}
-    end
+        nil -> {module, :changeset, [model, params]}
+        {mod, fun} -> {mod, fun, [model, params, which]}
+      end
     apply mod, fun, args
   end
 
@@ -298,9 +298,9 @@ defmodule Coherence.ControllerHelpers do
   """
   @spec login_user(conn, schema, params) :: conn
   def login_user(conn, user, _params \\ %{}) do
-     Config.auth_module
-     |> apply(Config.create_login, [conn, user, [id_key: Config.schema_key]])
-     |> TrackableService.track_login(user, Config.user_schema.trackable?, Config.user_schema.trackable_table?)
+    Config.auth_module
+    |> apply(Config.create_login, [conn, user, [id_key: Config.schema_key]])
+    |> TrackableService.track_login(user, Config.user_schema.trackable?, Config.user_schema.trackable_table?)
   end
 
   @doc """
